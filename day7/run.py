@@ -19,21 +19,22 @@ def get_data(filename: str) -> list[str]:
 
 
 def count_filtered_sum(sizes: dict[str, int], border: int) -> int:
-    
+
     return sum([size for size in sizes.values() if size < border])
 
+
 def _joinpath(path: list[str]) -> str:
-    joined = '/'.join(path[1:])
-    return f'/{joined}'
+    joined = "/".join(path[1:])
+    return f"/{joined}"
+
 
 def _get_sizes(data: list[str]) -> dict[str, int]:
     sizes = defaultdict(int)
     path = []
-    seen = set()
     for line in data:
         if curdirs := cd_re.findall(line):
             dest = curdirs[0]
-            if dest == '..':
+            if dest == "..":
                 path.pop()
             else:
                 sizes.setdefault(dest, 0)
@@ -41,19 +42,13 @@ def _get_sizes(data: list[str]) -> dict[str, int]:
         elif ls_re.match(line):
             ...
         else:
-            fsize, fname = line.split()
-            fullpath = '/'.join(path + [fname])
-            # print(fsize, fname, fullpath)
+            fsize, _ = line.split()
             if fsize.isdigit():
-                sizes['$$files'] += int(fsize)
-                if fname not in seen:
-                    # sizes[fname] = int(fsize)
-                    # print(path)
-                    for i in range(len(path)):
-                        dirpath = _joinpath(path[:i+1])
-                        sizes[dirpath] += int(fsize)
-                seen.add(fullpath)
+                for i in range(len(path)):
+                    dirpath = _joinpath(path[: i + 1])
+                    sizes[dirpath] += int(fsize)
     return sizes
+
 
 def count(data: list[str]) -> int:
     sizes = _get_sizes(data)
@@ -65,14 +60,10 @@ def count2(data: list[str]) -> int:
     sizes = _get_sizes(data)
     total = 70_000_000
     need = 30_000_000
-    now_taken = sizes['/']
+    now_taken = sizes["/"]
     need_free = total - need
-    print('files', sizes['$$files'])
-    # for name, sz in sorted(sizes.items(), key=lambda x: x[1], reverse=True)[:10]:
-    #     print(name, sz)
 
     for sz in sorted(sizes.values()):
-        print(now_taken, sz, now_taken - sz)
         if (now_taken - sz) < need_free:
             return sz
     return 0
@@ -80,7 +71,6 @@ def count2(data: list[str]) -> int:
 
 if __name__ == "__main__":
     test_input_data = get_data(TEST_INPUT_FILE)
-    print(test_input_data)
     assert count(test_input_data) == 95437
     print(f"Part 1: {count(get_data(INPUT_FILE))}")
     assert count2(test_input_data) == 24933642
